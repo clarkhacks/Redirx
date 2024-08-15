@@ -7,20 +7,19 @@ const firebaseConfig = {
 	projectId: 'wkmn-link-track',
 	storageBucket: 'wkmn-link-track.appspot.com',
 	messagingSenderId: '868512692736',
-	appId: '1:868512692736:web:98882b62310bc7e444b6e5',
+	appId: '1:868512692736:web:98882b62310bc7e444b6e5'
 };
 const app = initializeApp(firebaseConfig);
 import {
 	getAuth,
-	createUserWithEmailAndPassword,
 	signInWithEmailAndPassword,
 	onAuthStateChanged,
-	signOut,
+	signOut
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js';
 import {
 	getDatabase,
 	ref,
-	set,
+	set
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js';
 const database = getDatabase(app);
 const auth = getAuth(app);
@@ -30,7 +29,7 @@ const userPassword = document.querySelector('#userPassword');
 const authForm = document.querySelector('#authForm');
 const secretContent = document.querySelector('#secretContent');
 const shortView = document.querySelector('#shortView');
-const signUpButton = document.querySelector('#signUpButton');
+// const signUpButton = document.querySelector('#signUpButton');
 const signInButton = document.querySelector('#signInButton');
 const signOutButton = document.querySelector('#signOutButton');
 const longURL = document.querySelector('#longURL');
@@ -39,22 +38,22 @@ const createRedirxButton = document.querySelector('#createURLButton');
 secretContent.style.display = 'none';
 shortView.style.display = 'none';
 
-async function userSignUp() {
-	const userEmailValue = userEmail.value;
-	const userPasswordValue = userPassword.value;
-	try {
-		const userCredential = await createUserWithEmailAndPassword(
-			auth,
-			userEmailValue,
-			userPasswordValue
-		);
-		const user = userCredential.user;
-		// checkAuthState();
-		console.log(user);
-	} catch (error) {
-		alert(error.code + ': ' + error.message);
-	}
-}
+// async function userSignUp() {
+// 	const userEmailValue = userEmail.value;
+// 	const userPasswordValue = userPassword.value;
+// 	try {
+// 		const userCredential = await createUserWithEmailAndPassword(
+// 			auth,
+// 			userEmailValue,
+// 			userPasswordValue
+// 		);
+// 		const user = userCredential.user;
+// 		// checkAuthState();
+// 		console.log(user);
+// 	} catch (error) {
+// 		alert(error.code + ': ' + error.message);
+// 	}
+// }
 async function userSignIn() {
 	const userEmailValue = userEmail.value;
 	const userPasswordValue = userPassword.value;
@@ -94,10 +93,12 @@ async function createRedirx() {
 		secretContent.style.display = 'none';
 		document.querySelector(
 			'#shortURL'
-		).innerHTML = `https://redirx.top/${randomSixCharCode}`;
+		).innerHTML = `https://rdrx.top/${randomSixCharCode}`;
 		document.querySelector(
 			'#shortURL'
-		).href = `https://redirx.top/${randomSixCharCode}`;
+		).href = `https://rdrx.top/${randomSixCharCode}`;
+		document.querySelector('#img').src =
+			'https://qr.redirx.top/?url=' + 'https://rdrx.top/' + randomSixCharCode;
 	} catch (error) {
 		alert(error.code + ': ' + error.message);
 	}
@@ -114,7 +115,7 @@ async function checkAuthState() {
 	});
 }
 checkAuthState();
-signUpButton.addEventListener('click', userSignUp);
+// signUpButton.addEventListener('click', userSignUp);
 signInButton.addEventListener('click', userSignIn);
 signOutButton.addEventListener('click', userSignOut);
 createRedirxButton.addEventListener('click', createRedirx);

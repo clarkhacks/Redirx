@@ -1,78 +1,78 @@
-addEventListener('fetch', event => {
-  event.respondWith(handleRequest(event.request))
-})
+addEventListener('fetch', (event) => {
+	event.respondWith(handleRequest(event.request));
+});
+const firebaseURL = `https://YOUR-FIREBASEIO-URL/link_track/${shortcode}.json`;
 
 async function handleRequest(request) {
-  if (request.method === 'POST') {
-    return handlePostRequest(request)
-  } else if (request.method === 'GET') {
-    return handleGetRequest(request)
-  } else {
-    return new Response('Method not allowed', { status: 405 })
-  }
+	const handlers = {
+		POST: handlePostRequest,
+		GET: handleGetRequest,
+	};
+
+	const handler = handlers[request.method] || handleMethodNotAllowed;
+	return handler(request);
 }
 
 async function handleGetRequest(request) {
-  // Parse the SHORTCODE from the request URL
-  const url = new URL(request.url)
-  const shortcode = url.pathname.substring(1)
+	const shortcode = new URL(request.url).pathname.substring(1);
+	const firebaseData = await fetchFirebaseData(shortcode);
 
-  // Fetch the data for the SHORTCODE from Firebase
-  const firebaseUrl = `https://wkmn-link-track-default-rtdb.firebaseio.com/link_track/${shortcode}.json`
-  const firebaseResponse = await fetch(firebaseUrl)
-  const firebaseData = await firebaseResponse.json()
+	if (!firebaseData || !firebaseData.url) {
+		return new Response('Not found', { status: 404 });
+	}
 
-  // If the SHORTCODE is not found in Firebase, return a 404 response
-  if (!firebaseData || !firebaseData.url) {
-    return new Response('Not found', { status: 404 })
-  }
-
-  // Redirect to the URL associated with the SHORTCODE
-  const redirectUrl = firebaseData.url
-  return Response.redirect(redirectUrl)
+	return Response.redirect(firebaseData.url);
 }
 
 async function handlePostRequest(request) {
-  try {
-    // Parse the JSON body from the POST request
-    const body = await request.json()
+	try {
+		const { url, api_key } = await request.json();
 
-    // Validate the incoming data
-    const { url, api_key } = body
-    if (!url || !api_key) {
-      return new Response('Bad Request: Missing url or api_key', { status: 400 })
-    }
+		if (!url || !api_key) {
+			return new Response('Bad Request: Missing url or api_key', {
+				status: 400,
+			});
+		}
 
-    // Generate a unique shortcode (you can improve this with a more sophisticated algorithm)
-    const shortcode = Math.random().toString(36).substr(2, 6)
+		const shortcode = generateShortcode();
+		const newLinkData = {
+			url,
+			created_at: new Date().toISOString(),
+			views: [],
+			api_key,
+		};
+		const responseData = await saveToFirebase(shortcode, newLinkData);
 
-    // Prepare the data to be stored
-    const newLinkData = {
-      url: url,
-      created_at: new Date().toISOString(),
-      views: [],
-      api_key: api_key  // Include the API key in the stored data
-    }
-
-    // Save the data to Firebase
-    const firebaseSaveUrl = `https://wkmn-link-track-default-rtdb.firebaseio.com/link_track/${shortcode}.json`
-    const firebaseResponse = await fetch(firebaseSaveUrl, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newLinkData)
-    })
-
-    // Return the response from Firebase directly
-    const responseData = await firebaseResponse.json()
-	const returnData = {
-		"shortcode": shortcode,
-		"databaseResponse": responseData
+		return new Response(
+			JSON.stringify({ shortcode, databaseResponse: responseData }),
+			{
+				status: 200,
+				headers: { 'Content-Type': 'application/json' },
+			}
+		);
+	} catch (error) {
+		return new Response('Internal Server Error', { status: 500 });
 	}
-    return new Response(JSON.stringify(returnData), {
-      status: firebaseResponse.status,
-      headers: { 'Content-Type': 'application/json' }
-    })
-  } catch (error) {
-    return new Response('Internal Server Error', { status: 500 })
-  }
+}
+
+async function fetchFirebaseData(shortcode) {
+	const firebaseResponse = await fetch(firebaseURL);
+	return await firebaseResponse.json();
+}
+
+async function saveToFirebase(shortcode, data) {
+	const firebaseResponse = await fetch(firebaseURL, {
+		method: 'PUT',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(data),
+	});
+	return await firebaseResponse.json();
+}
+
+function generateShortcode() {
+	return Math.random().toString(36).substr(2, 6);
+}
+
+function handleMethodNotAllowed() {
+	return new Response('Method not allowed', { status: 405 });
 }

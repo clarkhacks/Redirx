@@ -1,25 +1,26 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js';
+// Replace with your firebase config
 const firebaseConfig = {
-	apiKey: 'AIzaSyCRWH9mw1Cfxh2-batz6cXeUkT_vMi8la4',
-	authDomain: 'wkmn-link-track.firebaseapp.com',
-	databaseURL: 'https://wkmn-link-track-default-rtdb.firebaseio.com',
-	projectId: 'wkmn-link-track',
-	storageBucket: 'wkmn-link-track.appspot.com',
-	messagingSenderId: '868512692736',
-	appId: '1:868512692736:web:98882b62310bc7e444b6e5'
+	apiKey: 'X',
+	authDomain: 'X',
+	databaseURL: 'X',
+	projectId: 'X',
+	storageBucket: 'X',
+	messagingSenderId: 'X',
+	appId: 'X',
 };
 const app = initializeApp(firebaseConfig);
 import {
 	getAuth,
 	signInWithEmailAndPassword,
 	onAuthStateChanged,
-	signOut
+	signOut,
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js';
 import {
 	getDatabase,
 	ref,
-	set
+	set,
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js';
 const database = getDatabase(app);
 const auth = getAuth(app);
@@ -78,7 +79,6 @@ async function userSignOut() {
 	}
 }
 async function createRedirx() {
-	//  in rtdb create randomSixCharCode>allowed_view: "", url: "longURL" and return the randomSixCharCode
 	const longURLValue = longURL.value;
 	const randomSixCharCode = Math.random().toString(36).substring(2, 8);
 	const allowed_view = '0';
@@ -93,12 +93,10 @@ async function createRedirx() {
 		secretContent.style.display = 'none';
 		document.querySelector(
 			'#shortURL'
-		).innerHTML = `https://rdrx.top/${randomSixCharCode}`;
+		).innerHTML = `https://YOUR-SHORT-URL/${randomSixCharCode}`;
 		document.querySelector(
 			'#shortURL'
-		).href = `https://rdrx.top/${randomSixCharCode}`;
-		document.querySelector('#img').src =
-			'https://qr.redirx.top/?url=' + 'https://rdrx.top/' + randomSixCharCode;
+		).href = `https://YOUR-SHORT-URL/${randomSixCharCode}`;
 	} catch (error) {
 		alert(error.code + ': ' + error.message);
 	}

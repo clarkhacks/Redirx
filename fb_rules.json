@@ -1,0 +1,14 @@
+{
+  "rules": {
+    "link_track": {
+      "$id": {
+        ".write": "(
+          auth != null && newData.child('url').val().matches(/^https?:\\/\\/.*/) 
+        ) || (
+          root.child('link_track_keys').child(newData.child('api_key').val()).child('valid').val() == true
+        )",
+        ".read": true
+      }
+    }
+  }
+}

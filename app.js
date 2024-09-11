@@ -141,6 +141,7 @@ async function uploadFileToFirebase(file) {
 	const storageReference = storageRef(storage, 'rdrx-file-upload/' + fileName);
 
 	try {
+		uploadFileButton.innerHTML = 'Uploading...';
 		const snapshot = await uploadBytes(storageReference, file);
 		return await getDownloadURL(snapshot.ref);
 	} catch (error) {
@@ -175,6 +176,7 @@ uploadFileButton.addEventListener('click', async (e) => {
 	if (file) {
 		const downloadURL = await uploadFileToFirebase(file);
 		if (downloadURL) {
+			uploadFileButton.innerHTML = 'Upload';
 			await createFileShortURL(downloadURL);
 		}
 	} else {

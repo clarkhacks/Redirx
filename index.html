@@ -42,17 +42,33 @@
                             </div>
                             <button id="signInButton"
                                 class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Login</button>
-                            <!--<button id="signUpButton"
-                                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Sign
-                                Up</button>-->
                         </div>
                     </div>
                 </div>
             </div>
         </section>
     </div>
+
     <div id="secretContent">
         <section class="bg-gray-50 dark:bg-gray-900 h-screen">
+            <!-- Top Bar Menu -->
+            <nav class="w-full bg-gray-800 py-4">
+                <div class="container mx-auto flex justify-between items-center">
+                    <a href="#" class="text-white text-2xl">Redirx</a>
+                    <div>
+                        <button id="refreshPage"
+                            class="text-white bg-blue-700 hover:bg-blue-800 px-3 py-2 rounded-lg mx-2">Short
+                            URL</button>
+                        <button id="orCreateFile"
+                            class="text-white bg-blue-700 hover:bg-blue-800 px-3 py-2 rounded-lg mx-2">File
+                            Upload</button>
+                        <button id="signOutButton"
+                            class="text-white bg-red-700 hover:bg-red-800 px-3 py-2 rounded-lg">Sign
+                            Out</button>
+                    </div>
+                </div>
+            </nav>
+            <!-- End Top Bar Menu -->
             <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
                 <a href="#" class="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
                     Create Short URL
@@ -67,8 +83,8 @@
                         <div class="space-y-4 md:space-y-6">
                             <div>
                                 <label for="longURL"
-                                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your
-                                    Long URL</label>
+                                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your Long
+                                    URL</label>
                                 <input type="text" name="longURL" id="longURL"
                                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                     placeholder="https://www.google.com/" required="">
@@ -80,12 +96,28 @@
                 </div>
             </div>
         </section>
-        <div class="buttonContainer">
-            <button id="signOutButton">Sign Out</button>
-        </div>
     </div>
+
     <div id="shortView">
         <section class="bg-gray-50 dark:bg-gray-900 h-screen">
+            <!-- Top Bar Menu -->
+            <nav class="w-full bg-gray-800 py-4">
+                <div class="container mx-auto flex justify-between items-center">
+                    <a href="#" class="text-white text-2xl">Redirx</a>
+                    <div>
+                        <button id="refreshPage"
+                            class="text-white bg-blue-700 hover:bg-blue-800 px-3 py-2 rounded-lg mx-2">Short
+                            URL</button>
+                        <button id="orCreateFile"
+                            class="text-white bg-blue-700 hover:bg-blue-800 px-3 py-2 rounded-lg mx-2">File
+                            Upload</button>
+                        <button id="signOutButton"
+                            class="text-white bg-red-700 hover:bg-red-800 px-3 py-2 rounded-lg">Sign
+                            Out</button>
+                    </div>
+                </div>
+            </nav>
+            <!-- End Top Bar Menu -->
             <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
                 <a href="#" class="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
                     Your Link
@@ -104,6 +136,48 @@
             </div>
         </section>
     </div>
+
+    <div id="fileUploadView">
+        <section class="bg-gray-50 dark:bg-gray-900 h-screen">
+            <!-- Top Bar Menu -->
+            <nav class="w-full bg-gray-800 py-4">
+                <div class="container mx-auto flex justify-between items-center">
+                    <a href="#" class="text-white text-2xl">Redirx</a>
+                    <div>
+                        <button id="refreshPage"
+                            class="text-white bg-blue-700 hover:bg-blue-800 px-3 py-2 rounded-lg mx-2">Short
+                            URL</button>
+                        <button id="orCreateFile"
+                            class="text-white bg-blue-700 hover:bg-blue-800 px-3 py-2 rounded-lg mx-2">File
+                            Upload</button>
+                        <button id="signOutButton"
+                            class="text-white bg-red-700 hover:bg-red-800 px-3 py-2 rounded-lg">Sign
+                            Out</button>
+                    </div>
+                </div>
+            </nav>
+            <!-- End Top Bar Menu -->
+            <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
+                <a href="#" class="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
+                    Upload File
+                </a>
+                <div
+                    class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+                    <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
+                        <h1
+                            class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
+                            Upload a File to Redirx
+                        </h1>
+                        <input type="file" id="fileInput"
+                            class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400">
+                        <button id="uploadFileButton"
+                            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Upload</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
 
 </body>
 

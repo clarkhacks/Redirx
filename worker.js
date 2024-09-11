@@ -3,74 +3,160 @@ addEventListener('fetch', (event) => {
 });
 
 async function handleRequest(request) {
-	if (request.method === 'POST') {
-		return handlePostRequest(request);
-	} else if (request.method === 'GET') {
-		return handleGetRequest(request);
-	} else {
-		return new Response('Method not allowed', { status: 405 });
+	switch (request.method) {
+		case 'POST':
+			return handlePostRequest(request);
+		case 'GET':
+			return handleGetRequest(request);
+		default:
+			return new Response('Method not allowed', { status: 405 });
 	}
 }
 
+// Handle GET request
 async function handleGetRequest(request) {
-	// Parse the SHORTCODE from the request URL
+	const shortcode = getShortcodeFromRequest(request);
+
+	// If no shortcode, return the default page
+	if (!shortcode) {
+		return fetchDefaultPage();
+	}
+
+	const redirectUrl = await fetchShortcodeUrl(shortcode);
+
+	// If shortcode not found, return a 404
+	if (!redirectUrl) {
+		return fetchNotFoundPage();
+	}
+
+	const viewData = generateViewData(request);
+	await logViewData(shortcode, viewData);
+
+	// Redirect to the found URL
+	return Response.redirect(redirectUrl);
+}
+
+// Handle POST request
+async function handlePostRequest(request) {
+	try {
+		const body = await request.json();
+		const { url, api_key, custom, custom_code } = body;
+
+		if (!url || !api_key) {
+			return new Response('Bad Request: Missing url or api_key', {
+				status: 400,
+			});
+		}
+
+		const shortcode = custom && custom_code ? custom_code : generateShortcode();
+		const newLinkData = createLinkData(url, api_key);
+
+		const firebaseResponse = await saveToFirebase(shortcode, newLinkData);
+		const responseData = await firebaseResponse.json();
+
+		return new Response(
+			JSON.stringify({ shortcode, databaseResponse: responseData }),
+			{
+				status: firebaseResponse.status,
+				headers: { 'Content-Type': 'application/json' },
+			}
+		);
+	} catch (error) {
+		return new Response('Internal Server Error', { status: 500 });
+	}
+}
+
+// Utility: Parse shortcode from request
+function getShortcodeFromRequest(request) {
 	const url = new URL(request.url);
 	const shortcode = url.pathname.substring(1);
+	return shortcode && shortcode.length >= 2 ? shortcode : null;
+}
 
-	// If the path is empty or doesn't contain a valid shortcode, fetch the default page
-	if (!shortcode || shortcode.length < 2) {
-		const generalPageUrl = 'https://www.clark.today/general-purpose-domain/';
+// Utility: Fetch default page
+async function fetchDefaultPage() {
+	const generalPageUrl = 'https://www.clark.today/general-purpose-domain/';
+	let pageContent = await fetchPageContent(generalPageUrl);
 
-		// Fetch the general-purpose domain page content
-		let response = await fetch(generalPageUrl);
-		let pageContent = await response.text();
+	return new Response(pageContent, {
+		headers: { 'Content-Type': 'text/html' },
+	});
+}
 
-		// Replace assets starting with '/' to load correctly
-		pageContent = pageContent.replace(
-			/src="\//g,
-			'src="https://www.clark.today/'
-		);
-		pageContent = pageContent.replace(
-			/href="\//g,
-			'href="https://www.clark.today/'
-		);
+// Utility: Fetch 404 not found page
+async function fetchNotFoundPage() {
+	const notFoundPageUrl = 'https://my.redirx.top/+not-found';
+	let pageContent = await fetchPageContent(notFoundPageUrl);
 
-		return new Response(pageContent, {
-			headers: { 'Content-Type': 'text/html' },
-		});
-	}
+	return new Response(pageContent, {
+		headers: { 'Content-Type': 'text/html' },
+		status: 404,
+	});
+}
 
-	// Fetch the URL for the SHORTCODE from Firebase (only the url field)
+// Utility: Fetch page content and correct asset paths
+async function fetchPageContent(url) {
+	let response = await fetch(url);
+	let pageContent = await response.text();
+	pageContent = pageContent
+		.replace(/src="\//g, 'src="https://www.clark.today/')
+		.replace(/href="\//g, 'href="https://www.clark.today/');
+	return pageContent;
+}
+
+// Utility: Fetch URL associated with shortcode from Firebase
+async function fetchShortcodeUrl(shortcode) {
 	const firebaseUrl = `https://wkmn-link-track-default-rtdb.firebaseio.com/link_track/${shortcode}/url.json`;
 	const firebaseResponse = await fetch(firebaseUrl);
-	const redirectUrl = await firebaseResponse.json();
+	return firebaseResponse.json();
+}
 
-	// If the SHORTCODE is not found in Firebase, return a 404 response
-	if (!redirectUrl) {
-		const generalPageUrl = 'https://my.redirx.top/+not-found/';
+// Utility: Log view data to Firebase
+async function logViewData(shortcode, viewData) {
+	const firebaseUpdateUrl = `https://wkmn-link-track-default-rtdb.firebaseio.com/link_track/${shortcode}/views.json`;
+	await fetch(firebaseUpdateUrl, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(viewData),
+	});
+}
 
-		// Fetch the general-purpose domain page content
-		let response = await fetch(generalPageUrl);
-		let pageContent = await response.text();
+// Utility: Generate shortcode
+function generateShortcode() {
+	return Math.random().toString(36).substr(2, 6);
+}
 
-		return new Response(pageContent, {
-			headers: { 'Content-Type': 'text/html' },
-			status: 404,
-		});
-	}
+// Utility: Create link data for Firebase
+function createLinkData(url, api_key) {
+	return {
+		url,
+		created_at: new Date().toISOString(),
+		views: [],
+		api_key,
+	};
+}
 
-	// Convert the current time to Chicago time and format it
+// Utility: Save link data to Firebase
+async function saveToFirebase(shortcode, data) {
+	const firebaseSaveUrl = `https://wkmn-link-track-default-rtdb.firebaseio.com/link_track/${shortcode}.json`;
+	return fetch(firebaseSaveUrl, {
+		method: 'PUT',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(data),
+	});
+}
+
+// Utility: Generate view data for analytics
+function generateViewData(request) {
 	const chicagoTime = new Date().toLocaleString('en-US', {
 		timeZone: 'America/Chicago',
 	});
 
-	// Extract the visitor's IP address
 	const visitorIP =
 		request.headers.get('CF-Connecting-IP') ||
 		request.headers.get('X-Forwarded-For') ||
 		request.headers.get('Remote-Addr');
 
-	// Prepare the view data with additional details
 	const viewData = {
 		timestamp: chicagoTime,
 		ip: visitorIP,
@@ -78,7 +164,6 @@ async function handleGetRequest(request) {
 		referrer: request.headers.get('Referer'),
 	};
 
-	// If Cloudflare provides additional geo-location data, use it
 	if (request.cf) {
 		viewData.location = {
 			country: request.cf.country,
@@ -91,67 +176,5 @@ async function handleGetRequest(request) {
 		};
 	}
 
-	// Update the views array in Firebase by adding the new viewData object
-	const firebaseUpdateUrl = `https://wkmn-link-track-default-rtdb.firebaseio.com/link_track/${shortcode}/views.json`;
-	await fetch(firebaseUpdateUrl, {
-		method: 'POST', // Use POST to add a new entry to the views array
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify(viewData),
-	});
-
-	// Redirect to the URL associated with the SHORTCODE
-	return Response.redirect(redirectUrl);
-}
-
-async function handlePostRequest(request) {
-	try {
-		// Parse the JSON body from the POST request
-		const body = await request.json();
-
-		// Validate the incoming data
-		const { url, api_key, custom, custom_code } = body;
-		if (!url || !api_key) {
-			return new Response('Bad Request: Missing url or api_key', {
-				status: 400,
-			});
-		}
-
-		// Determine the shortcode to use
-		let shortcode;
-		if (custom && custom_code) {
-			shortcode = custom_code;
-		} else {
-			shortcode = Math.random().toString(36).substr(2, 6);
-		}
-
-		// Prepare the data to be stored
-		const newLinkData = {
-			url: url,
-			created_at: new Date().toISOString(),
-			views: [],
-			api_key: api_key, // Include the API key in the stored data
-		};
-
-		// Save the data to Firebase
-		const firebaseSaveUrl = `https://wkmn-link-track-default-rtdb.firebaseio.com/link_track/${shortcode}.json`;
-		const firebaseResponse = await fetch(firebaseSaveUrl, {
-			method: 'PUT',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(newLinkData),
-		});
-
-		// Return the response from Firebase directly
-		const responseData = await firebaseResponse.json();
-		const returnData = {
-			shortcode: shortcode,
-			databaseResponse: responseData,
-		};
-
-		return new Response(JSON.stringify(returnData), {
-			status: firebaseResponse.status,
-			headers: { 'Content-Type': 'application/json' },
-		});
-	} catch (error) {
-		return new Response('Internal Server Error', { status: 500 });
-	}
+	return viewData;
 }

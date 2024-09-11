@@ -142,6 +142,7 @@ async function uploadFileToFirebase(file) {
 
 	try {
 		uploadFileButton.innerHTML = 'Uploading...';
+		console.log('Trying to upload');
 		const snapshot = await uploadBytes(storageReference, file);
 		return await getDownloadURL(snapshot.ref);
 	} catch (error) {
@@ -154,6 +155,7 @@ async function createFileShortURL(downloadURL) {
 	if (shortCode) {
 		toggleElementDisplay(shortView, 'block');
 		toggleElementDisplay(fileUploadView, 'none');
+		console.log('Got file short code');
 		shortURL.innerHTML = `https://rdrx.top/${shortCode}`;
 		shortURL.href = `https://rdrx.top/${shortCode}`;
 	}
@@ -175,7 +177,9 @@ uploadFileButton.addEventListener('click', async (e) => {
 	const file = fileUpload.files[0];
 	if (file) {
 		const downloadURL = await uploadFileToFirebase(file);
+		console.log('Trying to get download url');
 		if (downloadURL) {
+			console.log('Got download url');
 			uploadFileButton.innerHTML = 'Upload';
 			await createFileShortURL(downloadURL);
 		}

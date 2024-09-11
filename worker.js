@@ -1,7 +1,7 @@
 addEventListener('fetch', (event) => {
 	event.respondWith(handleRequest(event.request));
 });
-
+const apiKey = API_KEY;
 async function handleRequest(request) {
 	switch (request.method) {
 		case 'POST':
@@ -162,6 +162,7 @@ function generateViewData(request) {
 		ip: visitorIP,
 		userAgent: request.headers.get('User-Agent'),
 		referrer: request.headers.get('Referer'),
+		api_key: apiKey,
 	};
 
 	if (request.cf) {

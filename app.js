@@ -103,7 +103,9 @@ function checkAuthState() {
 
 // Database Functions
 async function createRedirxURL(longURLValue, type) {
-	const randomSixCharCode = type + Math.random().toString(36).substring(2, 8);
+	let prefix = '';
+	type == undefined ? (prefix = '') : (prefix = type);
+	const randomSixCharCode = prefix + Math.random().toString(36).substring(2, 8);
 	const redirxData = {
 		allowed_view: '0',
 		url: longURLValue,

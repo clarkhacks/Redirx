@@ -112,8 +112,29 @@ async function createRedirxURL(longURLValue, type) {
 	};
 
 	try {
+		if (type == 'mf-') {
+			await set(ref(database, 'link_track/' + randomSixCharCode), {
+				images: longURLValue,
+				url: 'https://rdrx.top/' + randomSixCharCode,
+			});
+			return randomSixCharCode;
+		}
 		await set(ref(database, 'link_track/' + randomSixCharCode), redirxData);
 		return randomSixCharCode;
+	} catch (error) {
+		handleError(error);
+	}
+}
+
+async function createCustomRedirxURL(longURLValue, shortCode) {
+	const redirxData = {
+		allowed_view: '0',
+		url: longURLValue,
+	};
+
+	try {
+		await set(ref(database, 'link_track/' + shortCode), redirxData);
+		return shortCode;
 	} catch (error) {
 		handleError(error);
 	}
@@ -152,14 +173,22 @@ async function uploadFileToFirebase(file) {
 	}
 }
 
-async function createFileShortURL(downloadURL) {
-	const shortCode = await createRedirxURL(downloadURL, 'f-');
-	if (shortCode) {
+async function createFileShortURL(downloadURL, existingShortCode) {
+	if (existingShortCode) {
+		await createCustomRedirxURL(downloadURL, existingShortCode);
 		toggleElementDisplay(shortView, 'block');
 		toggleElementDisplay(fileUploadView, 'none');
-		console.log('Got file short code');
-		shortURL.innerHTML = `https://rdrx.top/${shortCode}`;
-		shortURL.href = `https://rdrx.top/${shortCode}`;
+		shortURL.innerHTML = `https://rdrx.top/${existingShortCode}`;
+		shortURL.href = `https://rdrx.top/${existingShortCode}`;
+	}
+	if (!existingShortCode) {
+		const shortCode = await createRedirxURL(downloadURL, 'f-');
+		if (shortCode) {
+			toggleElementDisplay(shortView, 'block');
+			toggleElementDisplay(fileUploadView, 'none');
+			shortURL.innerHTML = `https://rdrx.top/${shortCode}`;
+			shortURL.href = `https://rdrx.top/${shortCode}`;
+		}
 	}
 }
 
@@ -176,17 +205,30 @@ orCreateFile.addEventListener('click', () => {
 
 uploadFileButton.addEventListener('click', async (e) => {
 	e.preventDefault();
-	const file = fileUpload.files[0];
-	if (file) {
-		const downloadURL = await uploadFileToFirebase(file);
-		console.log('Trying to get download url');
-		if (downloadURL) {
-			console.log('Got download url');
-			uploadFileButton.innerHTML = 'Upload';
-			await createFileShortURL(downloadURL);
+
+	const files = fileUpload.files;
+	if (files.length > 0) {
+		const fileURLs = [];
+
+		// Loop through each file and upload
+		for (let i = 0; i < files.length; i++) {
+			const file = files[i];
+			const downloadURL = await uploadFileToFirebase(file);
+			fileURLs.push(downloadURL);
+		}
+
+		// Once all files are uploaded, store the URLs as an array in Firebase
+		if (fileURLs.length === files.length) {
+			const shortCode = await createRedirxURL(fileURLs, 'mf-'); // Pass the array directly
+			if (shortCode) {
+				toggleElementDisplay(shortView, 'block');
+				toggleElementDisplay(fileUploadView, 'none');
+				shortURL.innerHTML = `https://rdrx.top/${shortCode}`;
+				shortURL.href = `https://rdrx.top/${shortCode}`;
+			}
 		}
 	} else {
-		alert('No file selected!');
+		alert('No files selected!');
 	}
 });
 
